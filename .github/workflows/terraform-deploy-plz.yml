@@ -1,4 +1,4 @@
-name: Terraform-Deploy-PLZ
+name: Terraform-Deploy-Core-Platform-LZ
 
 # Triggers
 on:
@@ -39,14 +39,14 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./deployments/platform-lz
+        working-directory: /deployments/core-platformlz
 
     env: # Set environment variables for runner.
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }} # Use GitHub Secrets for sensitive data.
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }} # Azure Platform Subscription ID
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }} # Service Principal Client ID
       ARM_USE_OIDC: ${{ secrets.ARM_USE_OIDC }} # Use OIDC for authentication
-      CONFIG_DIRECTORY: "./deployments/platform-lz" # Directory containing Terraform configuration files.
+      CONFIG_DIRECTORY: "./deployments/core-platformlz" # Directory containing Terraform configuration files.
       TFVARS_FILE: "platform-lz.tfvars"
       ENVIRON: "platform-lz"
 
