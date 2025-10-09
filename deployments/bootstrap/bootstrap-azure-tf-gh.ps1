@@ -28,7 +28,8 @@ param(
     [switch]$destroy, # Add switch parameter for delete option.
     [Parameter(Mandatory=$true)][string]$envFile # Local variables file ".\env.psd1".
 )
-$workingDir = "$((Get-Location).Path)\deployments\bootstrap" # Working directory for Terraform files
+#$workingDir = "$((Get-Location).Path)\deployments\bootstrap" # Working directory for Terraform files
+$workingDir = "$((Get-Location).Path)" # Move working directory to current.
 
 # Required applications.
 $requiredApps = @(
