@@ -2,6 +2,8 @@
 # Logging: Monitoring & Diagnostics
 #======================================#
 
+data "azuread_client_config" "current" {} # Get current user session data.
+
 locals {
   name_part      = "${var.naming["prefix"]}-${var.naming["platform"]}" # Combine name parts in to single var.
   computed_tags  = {
