@@ -32,7 +32,7 @@ resource "azurerm_resource_group" "plz_log_mon_rg" {
 #======================================#
 
 # Storage Account for logs.
-resource "azure_storage_account" "plz_log_mon_sa" {
+resource "azurerm_storage_account" "plz_log_mon_sa" {
   name                     = "${local.sa_name_final}"
   resource_group_name      = azurerm_resource_group.plz_log_mon_rg.name
   location                 = azurerm_resource_group.plz_log_mon_rg.location
@@ -49,4 +49,3 @@ resource "azurerm_monitor_workspace" "plz_log_mon_amw" {
   location            = azurerm_resource_group.plz_log_mon_rg.location
   tags                = local.merged_tags
 }
-

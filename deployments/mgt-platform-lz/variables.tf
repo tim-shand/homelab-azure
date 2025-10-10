@@ -38,7 +38,11 @@ variable "core_management_group_display_name" {
 
 # Module Switches
 
-variable "enable_hub_network" {
+variable "enable_plz_hubvnet" {
+  type    = bool # If enable_hub_network = true, Terraform creates a map: { "hub" = true }.
+  default = true # If it’s false, the map is empty ({}) and Terraform skips the module.
+}
+variable "enable_plz_logging" {
   type    = bool # If enable_hub_network = true, Terraform creates a map: { "hub" = true }.
   default = true # If it’s false, the map is empty ({}) and Terraform skips the module.
 }
