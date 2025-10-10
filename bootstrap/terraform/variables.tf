@@ -1,17 +1,11 @@
-variable "azure_tenant_id" {
-  description = "The Azure Tenant ID to deploy resources into."
-  type        = string
-}
-
-variable "platform_subscription_id" {
-  description = "Platform subscription ID for the management group structure."
-  type        = string
-}
-
 variable "location" {
   description = "The Azure location to deploy resources into."
   type        = string
-  default     = "australiaeast"
+}
+
+variable "subscription_id" {
+  description = "The Azure platform subscription ID to deploy resources into."
+  type        = string
 }
 
 variable "core_management_group_id" {
@@ -34,11 +28,6 @@ variable "tags" {
   description = "A map of tags to apply to resources."
   type        = map(string)
   default     = {}
-}
-
-variable "github_org" {
-  description = "GitHub organziation name."
-  type        = string
 }
 
 variable "github_config" {

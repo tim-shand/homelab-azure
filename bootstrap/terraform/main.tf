@@ -1,10 +1,14 @@
-#---------------------------------------------------#
-# Service Principal / Federated Credentials
-#---------------------------------------------------#
+#=====================================================#
+# Bootstrap: Service Principal / Federated Credentials
+#=====================================================#
+
+locals {
+  full_name = "${var.naming["prefix"]}-${var.naming["platform"]}-${var.naming["project"]}-${var.naming["service"]}"
+}
 
 # Create App Registration and Service Principal for Terraform.
 resource "azuread_application" "entra_iac_app" {
-  display_name     = "${var.naming["prefix"]}-${var.naming["project"]}-${var.naming["service"]}-sp"
+  display_name     = "${local.full_name}-sp"
   logo_image       = filebase64("./tf-logo.png") # Image file for SP logo.
   owners           = [data.azuread_client_config.current.object_id] # Set current user as owner.
   notes            = "System: Service Principal for IaC (Terraform)." # Descriptive notes on purpose of the SP.
@@ -24,12 +28,17 @@ resource "azuread_application_federated_identity_credential" "entra_iac_app_cred
   description    = "Github CI/CD, federated credential."
   audiences      = ["api://AzureADTokenExchange"]
   issuer         = "https://token.actions.githubusercontent.com"
-  subject        = "repo:${var.github_org}/${var.github_config["repo"]}:ref:refs/heads/${var.github_config["branch"]}"
+  subject        = "repo:${var.github_config["org"]}/${var.github_config["repo"]}:ref:refs/heads/${var.github_config["branch"]}"
 }
 
-# Assign 'Contributor' role for SP at top-level management group.
+# Get tenant ID From current session.
+data "azurerm_management_group" "mg_tenant_root" {
+  name = data.azuread_client_config.current.tenant_id
+}
+
+# Assign 'Contributor' role for SP at top-level tenant root management group.
 resource "azurerm_role_assignment" "rbac_mg_sp" {
-  scope                = azurerm_management_group.mg_org_core.id
+  scope                = data.azurerm_management_group.mg_tenant_root.id # Tenant Root MG ID.
   role_definition_name = "Contributor"
-  principal_id         = azuread_service_principal.entra_iac_sp.object_id
+  principal_id         = azuread_service_principal.entra_iac_sp.object_id # Service Principal ID.
 }

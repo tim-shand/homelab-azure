@@ -6,17 +6,14 @@
 # DESCRIPTION:
 Bootstrap script to prepare Azure tenant for management via Terraform and Github Actions.
 This script performs the following tasks:
-- Checks for required local applications (Azure CLI, Terraform, Git, GitHub CLI).
-- Checks for local environment variables file (env.psd1) and imports configuration.
-- Validates Azure CLI authentication, used Azure tenant ID and subscription from current session.
-- Validates Github CLI authentication, confirms provided repo name is available (prompts to delete if exists).
-- Generates Terraform variable file (TFVARS) from local environment variables.
+- Checks for required local applications (Azure CLI, Terraform, GitHub CLI).
+- Validates Azure CLI authentication, uses Azure tenant ID and subscription from current session.
+- Validates Github CLI authentication, confirms provided repo name is available.
 - Initializes and applies Terraform configuration to create bootstrap resources in Azure.
-- Adds bootstrap script and Terraform files into the provided Github repo.
 
 # USAGE:
-.\bootstrap-azure-tf-gh.ps1 -envfile ".\env.psd1"
-.\bootstrap-azure-tf-gh.ps1 -envfile ".\env.psd1" -destroy
+.\bootstrap-azure-tf-gh.ps1
+.\bootstrap-azure-tf-gh.ps1 -destroy
 #>
 
 #=============================================#
@@ -28,14 +25,12 @@ param(
     [switch]$destroy, # Add switch parameter for delete option.
     [Parameter(Mandatory=$true)][string]$envFile # Local variables file ".\env.psd1".
 )
-#$workingDir = "$((Get-Location).Path)\deployments\bootstrap" # Working directory for Terraform files
-$workingDir = "$((Get-Location).Path)" # Move working directory to current.
+$workingDir = "$((Get-Location).Path)\terraform" # Move working directory to current.
 
 # Required applications.
 $requiredApps = @(
     [PSCustomObject]@{ Name = "Azure CLI"; Command = "az" }
     [PSCustomObject]@{ Name = "Terraform"; Command = "terraform" }
-    [PSCustomObject]@{ Name = "Git"; Command = "git" }
     [PSCustomObject]@{ Name = "GitHub CLI"; Command = "gh" }
 )
 
@@ -134,7 +129,6 @@ Catch{
 Write-Log -Level "SYS" -Message "Check: Required applications... "
 ForEach($app in $requiredApps) {
     Try{
-        # Attempt to get the command for each application to test if installed.
         Get-Command $app.Command > $null 2>&1
     }
     Catch{
@@ -145,43 +139,29 @@ ForEach($app in $requiredApps) {
 } 
 Write-Host "PASS" -ForegroundColor Green
 
-# Validate: Github CLI authentication. Check for existing authenticated session.
+# Validate: Github CLI - Authentication. Check for existing authenticated session.
 Write-Log -Level "SYS" -Message "Check: Validate Github CLI authenticated session... "
 Try{
     $ghSession = gh api user 2>$null | ConvertFrom-JSON
     Write-Host "PASS" -ForegroundColor Green
     Write-Log -Level "INF" -Message "- Github CLI logged in as: $($ghSession.login) [$($ghSession.html_url)]"
-
-    # Check if repository already exists, prompt to remove and re-create (unless $destroy flag is set).
-    $gh_org = ($ghSession.html_url).Replace("https://github.com/","")
-    if(-not ($destroy) ){
-        $repoCheck = (gh repo list --json name | ConvertFrom-JSON)
-        if ($repoCheck | Where-Object {$_.name -eq "$($config.github_config.repo)"} ) {
-            Write-Log -Level "WRN" -Message "- Repository '$($gh_org)/$($config.github_config.repo)' already exists."
-            Write-Log -Level "WRN" -Message "- If this repository was created outside of this process, it must be removed and re-created to ensure proper configuration."
-            Write-Log -Level "WRN" -Message "- If you do not wish to remove this repository, update repository name in variables file. Overwrite?"
-            if(Get-UserConfirm){
-                Try{
-                    gh repo delete "$($gh_org)/$($config.github_config.repo)" --yes 2>$null
-                    Write-Log -Level "INF" -Message "- Repository '$($gh_org)/$($config.github_config.repo)' removed successfully."
-                }
-                Catch{
-                    Write-Log -Level "ERR" -Message "- Failed to remove GitHub repository. Please check configuration and try again."
-                    Write-Log -Level "ERR" -Message "- $_"
-                    exit 1
-                }
-            }
-            else{
-                Write-Log -Level "ERR" -Message "- Repository deletion aborted. Please remove manually, or provide a different name and try again."
-                exit 1
-            }
-        }
-    }
 } 
 Catch{
     Write-Host "FAIL" -ForegroundColor Red
     Write-Log -Level "ERR" -Message "- Failed GitHub CLI authentication check. Please run 'gh auth login' and try again."
     exit 1
+}
+
+# Validate: Github CLI - Check if repository exists, and is accessible.
+if(-not ($destroy) ){
+    $repoCheck = (gh repo list --json name | ConvertFrom-JSON)
+    if ($repoCheck | Where-Object {$_.name -eq "$($config.github_config.repo)"} ) {
+        Write-Log -Level "INF" -Message "- Repository '$($config.github_config.org)/$($config.github_config.repo)' exists."
+    }
+    else{
+        Write-Log -Level "ERR" -Message "- Provided repository '$($config.github_config.org)/$($config.github_config.repo)' cannot be found. Please check configuration is correct."
+        exit 1
+    }
 }
 
 # Validate: Azure CLI authentication. Check for existing authenticated session.
@@ -204,6 +184,10 @@ else{
 # MAIN: Stage 2 - Display Intended Actions
 #================================================#
 
+$name_format = "$($config.naming.prefix)-$($config.naming.platform)-$($config.naming.project)-$($config.naming.service)"
+$name_format_sa = "$($config.naming.prefix)$($config.naming.platform)$($config.naming.project)$($config.naming.service)"
+
+Write-Host ""
 Write-Host "Target Azure Environment:" -ForegroundColor Cyan
 Write-Host "- Tenant ID: $($azSession.tenantId)"
 Write-Host "- Subscription ID: $($azSession.id)"
@@ -213,21 +197,20 @@ Write-Host ""
 Write-Host "The following resources will be " -ForegroundColor Cyan -NoNewLine
 Write-Host "$(($sys_action.past).ToUpper()):" -ForegroundColor $sys_action.colour
 
-Write-Host "- Github:" -ForegroundColor Yellow
-Write-Host "  - Target Repository: $gh_org/$($config.github_config.repo)"
+Write-Host "- Github: $($config.github_config.org)/$($config.github_config.repo)" -ForegroundColor Yellow
 Write-Host "  - Secrets: Used by workflows for authentication."
 Write-Host "  - Variables: Used by workflows for Terraform remote backend."
-Write-Host "- Azure:" -ForegroundColor Yellow
+Write-Host "- Azure: $($azSession.tenantDefaultDomain) [$($azSession.tenantId)]" -ForegroundColor Yellow
 Write-Host "  - Core Management Group: $($config.core_management_group_display_name) ($($config.core_management_group_id))"
-Write-Host "  - Entra ID Service Principal: $($config.naming.prefix)-$($config.naming.project)-$($config.naming.service)-sp"
+Write-Host "  - Entra ID Service Principal: $name_format-sp"
 if($destroy){
-    Write-Host "  - Resource Group: $($config.naming.prefix)-$($config.naming.project)-$($config.naming.service)-rg" -NoNewline
+    Write-Host "  - Resource Group: $name_format-rg" -NoNewline
     Write-Host " (** INCLUDES ALL CHILD RESOURCES **)" -ForegroundColor $sys_action.colour
 }
 else{
-    Write-Host "  - Resource Group: $($config.naming.prefix)-$($config.naming.project)-$($config.naming.service)-rg"
-    Write-Host "  - Storage Account: ** Determined during deployment (requires random integers) **"
-    Write-Host "  - Storage Container: $($config.naming.prefix)-$($config.naming.project)-$($config.naming.service)-state"
+    Write-Host "  - Resource Group: $name_format-rg"
+    Write-Host "  - Storage Account: $name_format_sa**** [Determined during deployment (requires random integers)]"
+    Write-Host "  - Storage Container: $name_format-state"
 }
 Write-Host ""
 Write-Log -Level "WRN" -Message "The above resources will be $(($sys_action.past).ToLower()) in the target environment."
@@ -242,41 +225,44 @@ if(-not (Get-UserConfirm) ){
 
 # Generate TFVARS file.
 $tfVARS = @"
+# SAFE TO COMMIT
+# This file contains only non-sensitive configuration data (no credentials or secrets).
+# All secrets are stored securely in Github Secrets or environment variables.
+
 # Azure Settings.
-location = "$($config.location)" # Desired location for resources to be deployed in Azure.
-core_management_group_id = "$($config.core_management_group_id)" # Desired ID for the top-level management group (under Tenant Root).
-core_management_group_display_name = "$($config.core_management_group_display_name)" # Desired display name for the top-level management group.
+location = "newzealandnorth" # Desired location for resources to be deployed in Azure.
+core_management_group_id = "tjs-core-mg" # Desired ID for the top-level management group (under Tenant Root).
+core_management_group_display_name = "TShand" # Desired display name for the top-level management group (under Tenant Root).
 
 # Naming Settings (used for resource names).
 naming = {
     prefix = "$($config.naming.prefix)" # Short name of organization ("abc").
-    project = "$($config.naming.project)" # Project name for related resources ("platform", "landingzone").
-    service = "$($config.naming.service)" # Service name used in the project ("iac", "mgt", "sec").
-    environment = "$($config.naming.environment)" # Environment for resources/project ("dev", "tst", "prd", "alz").
+    platform = "$($config.naming.platform)" # Platform type: ("plz", "app")
+    project = "$($config.naming.project)" # Project name for related resources ("platform", "webapp01").
+    service = "$($config.naming.service)" # Service name used in the project ("gov", "con", "sec").
+    environment = "$($config.naming.environment)" # Environment for resources/project ("dev", "tst", "prd").
 }
 
 # Tags (assigned to all bootstrap resources).
 tags = {
     Project = "$($config.tags.project)" # Name of the project the resources are for.
-    Environment = "$($config.tags.environment)" # dev, tst, prd, alz
+    Environment = "$($config.tags.environment)" # dev, tst, prd
     Owner = "$($config.tags.owner)" # Team responsible for the resources.
     Creator = "$($config.tags.creator)" # Person or process that created the resources.
-    Deployment = "$(Get-Date -f "yyyyMMdd.HHmmss")" # Timestamp for identifying deployment.
+    Modified = "$(Get-Date -f 'yyyyMMdd.HHmmss')" # Last modified timestamp.
+    ModifiedBy = "$($config.tags.ModifiedBy)"
 }
 
-# GitHub Settings.
+# Github Settings.
 github_config = {
-    repo = "$($config.github_config.repo)" # Replace with your new desired GitHub repository name. Must be unique within the organization and empty.
-    repo_desc = "$($config.github_config.repo_desc)" # Description for the GitHub repository.
-    branch = "$($config.github_config.branch)" # Replace with your preferred branch name.
-    visibility = "$($config.github_config.visibility)" # Set to "public" or "private" as required.
+    org = "$($config.github_config.org)" # Github organization where repository is located.
+    repo = "$($config.github_config.repo)" # Github repository to use for adding secrets and variables.
+    branch = "$($config.github_config.branch)" # Using main branch of repository.
 }
-
 "@
-# Write out TFVARS file (only if not already exists).
-if(-not (Test-Path -Path "$workingDir\bootstrap.tfvars") ){
-    $tfVARS | Out-File -Encoding utf8 -FilePath "$workingDir\bootstrap.tfvars" -Force
-}
+
+# Write out TFVARS file.
+$tfVARS | Out-File -Encoding utf8 -FilePath "$workingDir\bootstrap.tfvars" -Force
 
 # Terraform: Initialize
 Write-Log -Level "SYS" -Message "Performing Action: Initialize Terraform configuration... "
@@ -313,9 +299,7 @@ if($destroy){
         Write-Log -Level "SYS" -Message "Performing Action: Running Terraform destroy... "
         if(terraform -chdir="$($workingDir)" destroy --auto-approve `
             -var-file="bootstrap.tfvars" `
-            -var="azure_tenant_id=$($azSession.tenantId)" `
-            -var="platform_subscription_id=$($azSession.id)" `
-            -var="github_org=$($gh_org)"
+            -var="subscription_id=$($azSession.id)"
         ){
             Write-Host "PASS" -ForegroundColor Green
             Write-Host -ForegroundColor Cyan "`r`n*** Bootstrap Removal Complete! ***`r`n"
@@ -331,9 +315,7 @@ else{
     Write-Log -Level "SYS" -Message "Performing Action: Running Terraform plan... "
     if(terraform -chdir="$($workingDir)" plan --out=bootstrap.tfplan `
             -var-file="bootstrap.tfvars" `
-            -var="azure_tenant_id=$($azSession.tenantId)" `
-            -var="platform_subscription_id=$($azSession.id)" `
-            -var="github_org=$($gh_org)"
+            -var="subscription_id=$($azSession.id)"
     ){
         Write-Host "PASS" -ForegroundColor Green
         terraform -chdir="$($workingDir)" show "$workingDir\bootstrap.tfplan"
@@ -390,12 +372,12 @@ if(-not ($destroy)){
     $tfBackend = `
 @"
 terraform {
-    backend "azurerm" {
+  backend "azurerm" {
     resource_group_name  = "$($tf_rg)"
     storage_account_name = "$($tf_sa)"
     container_name       = "$($tf_cn)"
     key                  = "bootstrap.tfstate"
-    }
+  }
 }
 "@
     $tfBackend | Out-File -Encoding utf8 -FilePath "$workingDir\backend.tf" -Force
@@ -419,67 +401,21 @@ terraform {
 }
 
 #================================================#
-# MAIN: Stage 6 - Clone to New Repo
+# MAIN: Stage 6 - Clean Up
 #================================================#
 
-if(-not ($destroy) ){
-
-    # Confirm access to remote GitHub repository.
-    Write-Log -Level "SYS" -Message "Confirming access to remote GitHub repository ($($gh_org)/$($config.github_config.repo))... "
-
-    if( gh repo view "$($gh_org)/$($config.github_config.repo)" ){
-        Write-Host "PASS" -ForegroundColor Green
-        $gh_url = (gh repo view "$($gh_org)/$($config.github_config.repo)" --json url | ConvertFrom-JSON).url
-    }
-    else{
-        Write-Host "FAIL" -ForegroundColor Red
-        Write-Log -Level "ERR" -Message "- Unable to access target repository. Please ensure access is available and try again."
-        exit 1
-    }
-
-    # Create temporary folder for repo and initialize Git.
-    Write-Log -Level "SYS" -Message "Creating temporary directory for new Git repository... "
-    Try{
-        $tmpdir = (New-Item -ItemType Directory -Path "..\tmp_git_dir" -Force)
-        $file_copy = (Copy-Item -Path ".\*" -Destination $tmpdir.fullname -Recurse -Force -Exclude ".git")
-        $git_init = git init $($tmpdir.fullname)
-        Write-Host "PASS" -ForegroundColor Green
-    }
-    Catch{
-        Write-Host "FAIL" -ForegroundColor Red
-        Write-Log -Level "ERR" -Message "- Failed to create temporary directory for Git. Please check permissions and try again."
-        Write-Log -Level "ERR" -Message "- $_"
-    }
-
-    # Commit local code to remote repository.
-    Write-Log -Level "SYS" -Message "Committing codebase to Git repository ($gh_url)... "
-    Try{
-        $git = git -C $($tmpdir.fullname) remote add origin $gh_url
-        $git = git -C $($tmpdir.fullname) add .
-        $git = git -C $($tmpdir.fullname) commit -m "Initial commit."
-        $git = git -C $($tmpdir.fullname) push origin main
-        Write-Host "PASS" -ForegroundColor Green
-    }
-    Catch{
-        Write-Host "FAIL" -ForegroundColor Red
-        Write-Log -Level "ERR" -Message "- Unable to push into repository. Please ensure access is available and try again."
-        exit 1
-    }
-
-    # Clean Up
-    Write-Log -Level "SYS" -Message "Running clean up process... "
-    Try{
-        $tmpdir = (Remove-Item -Path "..\tmp_git_dir" -Recurse -Force)
-        $file_del = (Remove-Item -Path ".\.terraform" -Recurse -Force)
-        $file_del = (Remove-Item -Path ".\.terraform.*" -Force)
-        $file_del = (Remove-Item -Path ".\*.tfstate*" -Force)
-        Write-Host "PASS" -ForegroundColor Green
-    }
-    Catch{
-        Write-Host "FAIL" -ForegroundColor Red
-        Write-Log -Level "ERR" -Message "- Failed to clean up all resources. Manual clean up of files may be required."
-    }
+# Clean Up
+Write-Log -Level "SYS" -Message "Running clean up process... "
+Try{
+    Remove-Item -Path "$workingDir\.terraform" -Recurse -Force
+    Remove-Item -Path "$workingDir\.terraform.*" -Force
+    Remove-Item -Path "$workingDir\*.tfstate*" -Force
+    Remove-Item -Path "$workingDir\*.tfplan*" -Force
+    Write-Host "PASS" -ForegroundColor Green
+}
+Catch{
+    Write-Host "FAIL" -ForegroundColor Red
+    Write-Log -Level "ERR" -Message "- Failed to clean up all resources. Manual clean up of files may be required."
 }
 
-$git, $git_init, $file_copy, $file_del > $null # Shut up VS Code complaining about unreferenced vars.
 Write-Host -ForegroundColor Cyan "`r`n*** Bootstrap Deployment Complete! ***`r`n"

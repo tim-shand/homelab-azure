@@ -1,10 +1,16 @@
-#---------------------------------------------------#
-# Terraform Backend Resources
-#---------------------------------------------------#
+#=====================================================#
+# Bootstrap: Terraform Backend Resources
+#=====================================================#
+
+# Generate a random integer to use for suffix for uniqueness.
+resource "random_integer" "rndint" {
+  min = 10000
+  max = 99999
+}
 
 # Create Resource Group.
 resource "azurerm_resource_group" "tf_rg" {
-  name     = "${var.naming["prefix"]}-${var.naming["project"]}-${var.naming["environment"]}-${var.naming["service"]}-rg"
+  name     = "${local.full_name}-rg"
   location = var.location
   tags     = var.tags
 }
@@ -12,7 +18,7 @@ resource "azurerm_resource_group" "tf_rg" {
 # Dynamically truncate string to a specified maximum length (max 24 chars for SA name).
 locals {
   sa_name_max_length = 19 # Random integer suffix will add 5 chars, so max = 19 for base name.
-  sa_name_base       = "${var.naming["prefix"]}${var.naming["project"]}${var.naming["service"]}sa${random_integer.rndint.result}"
+  sa_name_base       = "${var.naming["prefix"]}${var.naming["platform"]}${var.naming["project"]}${var.naming["service"]}sa${random_integer.rndint.result}"
   sa_name_truncated  = length(local.sa_name_base) > local.sa_name_max_length ? substr(local.sa_name_base, 0, local.sa_name_max_length - 5) : local.sa_name_base
   sa_name_final      = "${local.sa_name_truncated}${random_integer.rndint.result}"
 }
@@ -30,7 +36,7 @@ resource "azurerm_storage_account" "tf_sa" {
 
 # Storage Container.
 resource "azurerm_storage_container" "tf_sc" {
-  name                  = "${var.naming["project"]}-${var.naming["service"]}-tfstate"
+  name                  = "${local.full_name}-tfstate"
   storage_account_id    = azurerm_storage_account.tf_sa.id
   container_access_type = "private"
 }
