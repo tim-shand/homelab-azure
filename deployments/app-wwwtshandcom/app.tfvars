@@ -23,4 +23,3 @@ tags = {
     Creator = "IaC-Terraform" # Person or process that created the resources.
     ModifiedBy = "IaC-Terraform"
 }
-
