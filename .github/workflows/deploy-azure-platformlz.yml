@@ -67,7 +67,7 @@ jobs:
           -backend-config="key=$TFSTATE_FILE"
 
       - name: "Terraform: Plan"
-        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.action == 'Plan' }}
+        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.action == 'Plan' || github.event.inputs.action == 'Plan-Apply'}}
         run: |
           terraform plan -out=tfplan -var-file=$TFVARS_FILE \
           -var="azure_tenant_id=$ARM_TENANT_ID" \
@@ -76,7 +76,6 @@ jobs:
       - name: "Terraform: Apply"
         if: ${{ github.event.inputs.action == 'Plan-Apply' }}
         run: |
-          terraform plan -out=tfplan -var-file=$TFVARS_FILE
           terraform apply --auto-approve -input=false tfplan
 
       - name: "Terraform: Destroy"
