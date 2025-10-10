@@ -42,10 +42,19 @@ resource "azurerm_storage_account" "plz_log_mon_sa" {
   tags                     = var.tags
 }
 
-# Azure Monitor Workspace
-resource "azurerm_monitor_workspace" "plz_log_mon_amw" {
-  name                = "${local.name_part}-log-mon-amw"
+# Log Analytics Workspace
+resource "azurerm_log_analytics_workspace" "plz_log-mon_law" {
+  name                = "${local.name_part}-log-mon-law"
   resource_group_name = azurerm_resource_group.plz_log_mon_rg.name
   location            = azurerm_resource_group.plz_log_mon_rg.location
   tags                = local.merged_tags
+  sku                 = "PerGB2018"
+  retention_in_days   = 30
+}
+
+resource "azurerm_log_analytics_linked_storage_account" "plz_log-mon_law_sa" {
+  data_source_type    = "CustomLogs"
+  resource_group_name = azurerm_resource_group.plz_log_mon_rg.name
+  workspace_id        = azurerm_log_analytics_workspace.plz_log-mon_law.id
+  storage_account_ids = [azurerm_storage_account.plz_log_mon_sa.id]
 }
