@@ -5,7 +5,7 @@
 # Create core top-level management group for the organization.
 resource "azurerm_management_group" "mg_org_core" {
   display_name = var.core_management_group_display_name
-  name         = "${var.naming["prefix"]}-${var.core_management_group_id}"
+  name         = "${var.core_management_group_id}"
 }
 
 # Create child management groups under core management group.
