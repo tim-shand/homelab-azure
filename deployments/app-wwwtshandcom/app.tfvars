@@ -3,8 +3,8 @@
 # All secrets are stored securely in Github Secrets or environment variables.
 
 # Azure Settings.
-location = "newzealandnorth" # Desired location for resources to be deployed in Azure.
-management_group = "workload" # Desired ID for the top-level management group (under Tenant Root).
+location = "newzealandnorth" # Target location for resources to be deployed in Azure.
+management_group = "workload" # Workload management group.
 
 # Naming Settings (used for resource names).
 naming = {

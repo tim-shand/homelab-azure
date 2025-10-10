@@ -24,7 +24,7 @@ resource "azurerm_resource_group" "plz_con_hub_rg" {
 # Create: Virtual Network (Hub)
 resource "azurerm_virtual_network" "plz_con_hub_vnet" {
   name                = "${local.name_part}-con-hub-vnet"
-  location            = var.location
+  location            = azurerm_resource_group.plz_con_hub_rg.location
   resource_group_name = azurerm_resource_group.plz_con_hub_rg.name
   address_space       = [var.vnet_space]
   tags                = local.merged_tags
@@ -56,3 +56,15 @@ resource "azurerm_subnet_network_security_group_association" "plz_con_hub_sn1_ns
   subnet_id                 = azurerm_subnet.plz_con_hub_sn1.id
   network_security_group_id = azurerm_network_security_group.plz_con_hub_sn1_nsg.id
 }
+
+#======================================#
+# Network Watcher
+#======================================#'
+
+resource "azurerm_network_watcher" "plz_con_hub_nww" {
+  name                = "${local.name_part}-con-hub-nww"
+  location            = azurerm_resource_group.plz_con_hub_rg.location
+  resource_group_name = azurerm_resource_group.plz_con_hub_rg.name
+  tags                = local.merged_tags
+}
+
