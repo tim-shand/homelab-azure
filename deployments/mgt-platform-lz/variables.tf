@@ -3,8 +3,8 @@ variable "azure_tenant_id" {
   type        = string
 }
 
-variable "platform_subscription_id" {
-  description = "Platform subscription ID for the management group structure."
+variable "subscription_id" {
+  description = "Subscription ID for the target changes."
   type        = string
 }
 
