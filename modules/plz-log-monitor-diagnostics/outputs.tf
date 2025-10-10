@@ -10,7 +10,7 @@ output "plz_log_sa_name" {
   description = "Storage Account for Azure logging."
 }
 
-output "plz_log_amw_id" {
-  value = azurerm_monitor_workspace.plz_log_mon_amw.id
-  description = "Azure Monitor Workspace ID."
-}
+# output "plz_log_amw_id" {
+#   value = azurerm_monitor_workspace.plz_log_mon_amw.id
+#   description = "Azure Monitor Workspace ID."
+# }

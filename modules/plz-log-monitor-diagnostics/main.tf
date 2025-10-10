@@ -27,10 +27,6 @@ resource "azurerm_resource_group" "plz_log_mon_rg" {
   tags     = local.merged_tags
 }
 
-#======================================#
-# Azure Monitor
-#======================================#
-
 # Storage Account for logs.
 resource "azurerm_storage_account" "plz_log_mon_sa" {
   name                     = "${local.sa_name_final}"
@@ -41,6 +37,10 @@ resource "azurerm_storage_account" "plz_log_mon_sa" {
   account_kind             = "StorageV2"
   tags                     = var.tags
 }
+
+#======================================#
+# Log Analytics
+#======================================#
 
 # Log Analytics Workspace
 resource "azurerm_log_analytics_workspace" "plz_log-mon_law" {
@@ -58,3 +58,17 @@ resource "azurerm_log_analytics_linked_storage_account" "plz_log-mon_law_sa" {
   workspace_id        = azurerm_log_analytics_workspace.plz_log-mon_law.id
   storage_account_ids = [azurerm_storage_account.plz_log_mon_sa.id]
 }
+
+# Logging: Entra ID
+resource "azurerm_monitor_diagnostic_setting" "plz_log-mon_entra_logs" {
+  name               = "${local.name_part}-log-mon-ds-entra"
+  target_resource_id = "/providers/Microsoft.AAD/domainServices/${data.azurerm_client_config.current.tenant_id}"
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.plz_log-mon_law.id
+  enabled_log {
+    category = "AuditLogs"
+  }
+  enabled_log {
+    category = "SignInLogs"
+  }
+}
+
