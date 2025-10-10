@@ -17,7 +17,7 @@ env.psd1
 backend.tf
 
 # Terraform variable files (potentially sensitive)
-*.tfvars
+#*.tfvars
 *.tfvars.json
 *.tfplan
 
