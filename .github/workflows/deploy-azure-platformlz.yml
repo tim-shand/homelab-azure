@@ -1,19 +1,17 @@
-name: Terraform_Core-Platform-LZ
+name: Terraform-Deploy_Platform-LZ
 
 # Triggers
 on:
-  # push:
-  #   branches:
-  #     - main # Trigger the workflow on commits to the main branch.
-  #   paths:
-  #     - 'terraform/deployments/platform-lz/**' # Only trigger for changes in the deployment directory.
-  #     - 'terraform/modules/**' # Also trigger for changes in modules.
-  # pull_request:
-  #   branches:
-  #     - main # Trigger the workflow on pull requests to the main branch.
-  #   paths:
-  #     - 'terraform/deployments/platform-lz/**' # Only trigger for changes in the deployment directory.
-  #     - 'terraform/modules/**' # Also trigger for changes in modules.
+  push:
+    branches:
+      - main # Trigger the workflow on commits to the main branch.
+    paths:
+      - 'deployments/mgt-platform-lz/**' # Only trigger for changes in the deployment directory.
+  pull_request:
+    branches:
+      - main # Trigger the workflow on pull requests to the main branch.
+    paths:
+      - 'deployments/mgt-platform-lz/**' # Only trigger for changes in the deployment directory.
   workflow_dispatch: # Manual run.
     inputs:
       action:
