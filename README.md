@@ -27,7 +27,7 @@ Configured with a simplified, light platform landing zone and personal project w
 
 - [x] Bootstrap Azure tenant using Powershell script. 
 - [x] Configure and deploy platform landing zone. 
-- [x] Configure logging for hub networking to Log Analytics. 
+- [ ] Configure logging for hub networking to Log Analytics. 
 - [ ] Migrate workloads to this code base. 
 - [ ] Investigate on-prem connectivity (VPN Gateway?). 
 - [ ] Investigate low-cost compute and serverless offerings. 
