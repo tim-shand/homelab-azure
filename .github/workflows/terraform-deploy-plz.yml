@@ -72,7 +72,7 @@ jobs:
         if: ${{ github.event.inputs.action == 'Plan' }}
         run: |
           terraform plan -out=tfplan -var-file=$TFVARS_FILE \
-          -var="tenant_id=$ARM_TENANT_ID" \
+          -var="azure_tenant_id=$ARM_TENANT_ID" \
           -var="subscription_id=$ARM_SUBSCRIPTION_ID"
 
       - name: "Terraform: Apply"
