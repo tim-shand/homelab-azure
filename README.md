@@ -26,7 +26,8 @@ Configured with a simplified, light platform landing zone and personal project w
 ## :memo: To Do
 
 - [x] Bootstrap Azure tenant using Powershell script. 
-- [ ] Configure and deploy platform landing zone. 
+- [x] Configure and deploy platform landing zone. 
+- [x] Configure logging for hub networking to Log Analytics. 
 - [ ] Migrate workloads to this code base. 
 - [ ] Investigate on-prem connectivity (VPN Gateway?). 
 - [ ] Investigate low-cost compute and serverless offerings. 
