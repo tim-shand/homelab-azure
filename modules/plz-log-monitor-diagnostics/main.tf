@@ -2,8 +2,6 @@
 # Logging: Monitoring & Diagnostics
 #======================================#
 
-data "azuread_client_config" "current" {} # Get current user session data.
-
 locals {
   name_part      = "${var.naming["prefix"]}-${var.naming["platform"]}" # Combine name parts in to single var.
   computed_tags  = {
@@ -64,7 +62,7 @@ resource "azurerm_log_analytics_linked_storage_account" "plz_log-mon_law_sa" {
 # Logging: Entra ID
 resource "azurerm_monitor_diagnostic_setting" "plz_log-mon_entra_logs" {
   name               = "${local.name_part}-log-mon-ds-entra"
-  target_resource_id = "/providers/Microsoft.AAD/domainServices/${data.azurerm_client_config.current.tenant_id}"
+  target_resource_id = "/providers/Microsoft.AAD/domainServices/${data.azuread_client_config.current.tenant_id}"
   log_analytics_workspace_id = azurerm_log_analytics_workspace.plz_log-mon_law.id
   enabled_log {
     category = "AuditLogs"
