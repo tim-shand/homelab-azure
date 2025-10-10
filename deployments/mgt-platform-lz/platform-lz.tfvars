@@ -22,6 +22,5 @@ tags = {
     Environment = "prd" # dev, tst, prd
     Owner = "CloudOps" # Team responsible for the resources.
     Creator = "Bootstrapper" # Person or process that created the resources.
-    Modified = timestamp() # Last modified timestamp.
     ModifiedBy = "IaC-Terraform"
 }
