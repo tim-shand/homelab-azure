@@ -3,12 +3,12 @@
 #=====================================================#
 
 locals {
-  full_name = "${var.naming["prefix"]}-${var.naming["platform"]}-${var.naming["project"]}-${var.naming["service"]}"
+  name_part = "${var.naming["prefix"]}-${var.naming["platform"]}-${var.naming["project"]}-${var.naming["service"]}"
 }
 
 # Create App Registration and Service Principal for Terraform.
 resource "azuread_application" "entra_iac_app" {
-  display_name     = "${local.full_name}-sp"
+  display_name     = "${local.name_part}-sp"
   logo_image       = filebase64("./tf-logo.png") # Image file for SP logo.
   owners           = [data.azuread_client_config.current.object_id] # Set current user as owner.
   notes            = "System: Service Principal for IaC (Terraform)." # Descriptive notes on purpose of the SP.

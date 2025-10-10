@@ -10,7 +10,7 @@ resource "random_integer" "rndint" {
 
 # Create Resource Group.
 resource "azurerm_resource_group" "tf_rg" {
-  name     = "${local.full_name}-rg"
+  name     = "${local.name_part}-rg"
   location = var.location
   tags     = var.tags
 }
@@ -36,7 +36,7 @@ resource "azurerm_storage_account" "tf_sa" {
 
 # Storage Container.
 resource "azurerm_storage_container" "tf_sc" {
-  name                  = "${local.full_name}-tfstate"
+  name                  = "${local.name_part}-tfstate"
   storage_account_id    = azurerm_storage_account.tf_sa.id
   container_access_type = "private"
 }
