@@ -1,4 +1,4 @@
-output "plz_rg_test" {
-  description = "The name of the Resource Group."
-  value = azurerm_resource_group.plz_rg_test.name
+output "plz_hub_vnet_name" {
+  description = "The name of the hub VNet."
+  value = module.az-con-network-hub.plz_hub_vnet_name
 }
