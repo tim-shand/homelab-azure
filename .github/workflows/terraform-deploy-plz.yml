@@ -44,7 +44,7 @@ jobs:
       TF_BACKEND_RG_NAME: ${{ vars.TF_BACKEND_RG_NAME }} # Terraform Backend: Resource Group
       TF_BACKEND_SA_NAME: ${{ vars.TF_BACKEND_SA_NAME }} # Terraform Backend: Storage Account
       TF_BACKEND_CN_NAME: ${{ vars.TF_BACKEND_CN_NAME }} # Terraform Backend: Container
-      CONFIG_DIRECTORY: "./deployments/mgt-platform-test" # Directory containing Terraform configuration files.
+      CONFIG_DIRECTORY: "./deployments/mgt-platform-lz" # Directory containing Terraform configuration files.
       TFVARS_FILE: "platform-lz.tfvars"
       TFSTATE_FILE: "platform-lz.tfstate"
 
@@ -62,7 +62,7 @@ jobs:
           terraform_version: 1.13.1
 
       - name: "Terraform: Init"
-        run: |
+        run: >
           terraform init -backend-config="resource_group_name=$TF_BACKEND_RG_NAME" \
           -backend-config="storage_account_name=$TF_BACKEND_SA_NAME" \
           -backend-config="container_name=$TF_BACKEND_CN_NAME" \
