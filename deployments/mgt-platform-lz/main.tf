@@ -14,6 +14,7 @@ module "plz-gov-management-groups" {
 
 module "plz-con-network-hub" {
   source = "../../modules/plz-con-network-hub"
+  count  = var.enable_hub_network ? 1 : 0
   location = var.location # Get from TFVARS file.
   naming = var.naming # Get from TFVARS file.
   tags = var.tags # Get from TFVARS file.

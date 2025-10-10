@@ -24,3 +24,6 @@ tags = {
     Creator = "Bootstrapper" # Person or process that created the resources.
     ModifiedBy = "IaC-Terraform"
 }
+
+# Module Switches
+enable_hub_network    = true

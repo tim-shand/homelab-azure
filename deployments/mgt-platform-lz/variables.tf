@@ -35,3 +35,10 @@ variable "core_management_group_display_name" {
   description = "Desired display name of the top-level management group (under Tenant Root)."
   type        = string
 }
+
+# Module Switches
+
+variable "enable_hub_network" {
+  type    = bool
+  default = true
+}
