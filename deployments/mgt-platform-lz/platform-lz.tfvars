@@ -27,4 +27,4 @@ tags = {
 
 # Module Switches
 enable_plz_hubvnet    = true
-enable_plz_logging    = true
+enable_plz_logging    = false # Not available for NZ North (yet).
