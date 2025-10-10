@@ -4,8 +4,8 @@
 
 # Deploy resoures via modules.
 
-module "az-con-network-hub" {
-  source = "../../modules/az-con-network-hub"
+module "plz-con-network-hub" {
+  source = "../../modules/plz-con-network-hub"
   workload_name = "platform" # Name of workload.
   location = var.location # Get from TFVARS file.
   naming = var.naming # Get from TFVARS file.
