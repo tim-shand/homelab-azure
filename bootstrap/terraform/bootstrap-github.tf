@@ -17,7 +17,7 @@ resource "github_actions_secret" "gh_tenant_id" {
 resource "github_actions_secret" "gh_subscription_id" {
   repository      = data.github_repository.gh_repository.name
   secret_name     = "ARM_SUBSCRIPTION_ID"
-  plaintext_value = data.azuread_client_config.current.id # Primary platform subscription ID.
+  plaintext_value = var.subscription_id # Primary platform subscription ID.
 }
 
 resource "github_actions_secret" "gh_client_id" {
