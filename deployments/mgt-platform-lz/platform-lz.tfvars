@@ -26,4 +26,5 @@ tags = {
 }
 
 # Module Switches
-enable_hub_network    = true
+enable_plz_hubvnet    = true
+enable_plz_logging    = true
