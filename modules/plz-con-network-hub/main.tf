@@ -3,14 +3,18 @@
 #======================================#
 
 locals {
-  name_part = "${var.naming["prefix"]}-${var.naming["platform"]}"
+  name_part      = "${var.naming["prefix"]}-${var.naming["platform"]}" # Combine name parts in to single var.
+  computed_tags  = {
+    Modified = "${timestamp()}" # Get timestamp to use for resource tags.
+  }
+  merged_tags = merge(local.computed_tags, var.tags) # Merge the tag map into existing tags variable.
 }
 
 # Create Resource Group.
 resource "azurerm_resource_group" "plz_con_hub_rg" {
   name     = "${local.name_part}-con-hub-rg"
   location = var.location
-  tags     = var.tags
+  tags     = local.merged_tags
 }
 
 #======================================#
@@ -23,7 +27,7 @@ resource "azurerm_virtual_network" "plz_con_hub_vnet" {
   location            = var.location
   resource_group_name = azurerm_resource_group.plz_con_hub_rg.name
   address_space       = [var.vnet_space]
-  tags                = var.tags
+  tags                = local.merged_tags
 }
 
 # Create: Virtual Network Subnet (Primary)
@@ -44,7 +48,7 @@ resource "azurerm_network_security_group" "plz_con_hub_sn1_nsg" {
   name                = "${local.name_part}-con-hub-sn1-nsg"
   location            = azurerm_virtual_network.plz_con_hub_vnet.location
   resource_group_name = azurerm_virtual_network.plz_con_hub_vnet.resource_group_name
-  tags                = var.tags
+  tags                = local.merged_tags
 }
 
 # Associate NSG with subnet.
