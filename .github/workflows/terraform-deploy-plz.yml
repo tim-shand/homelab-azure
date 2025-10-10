@@ -41,6 +41,9 @@ jobs:
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }} # Azure Platform Subscription ID
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }} # Service Principal Client ID
       ARM_USE_OIDC: ${{ secrets.ARM_USE_OIDC }} # Use OIDC for authentication
+      TF_BACKEND_RG_NAME: ${{ vars.TF_BACKEND_RG_NAME }} # Terraform Backend: Resource Group
+      TF_BACKEND_SA_NAME: ${{ vars.TF_BACKEND_SA_NAME }} # Terraform Backend: Storage Account
+      TF_BACKEND_CN_NAME: ${{ vars.TF_BACKEND_CN_NAME }} # Terraform Backend: Container
       CONFIG_DIRECTORY: "./deployments/core-platformlz" # Directory containing Terraform configuration files.
       TFVARS_FILE: "platform-lz.tfvars"
       TFSTATE_FILE: "platform-lz.tfstate"
