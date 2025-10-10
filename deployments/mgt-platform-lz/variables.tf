@@ -39,6 +39,6 @@ variable "core_management_group_display_name" {
 # Module Switches
 
 variable "enable_hub_network" {
-  type    = bool
-  default = true
+  type    = bool # If enable_hub_network = true, Terraform creates a map: { "hub" = true }.
+  default = true # If it’s false, the map is empty ({}) and Terraform skips the module.
 }

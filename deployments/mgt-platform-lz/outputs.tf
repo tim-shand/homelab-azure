@@ -1,9 +1,9 @@
 output "plz_hub_vnet_rg" {
   description = "The name of the hub VNet."
-  value = module.plz-con-network-hub.plz_hub_vnet_rg
+  value = try(module.plz-con-network-hub["hub"].plz_hub_vnet_rg, null)
 }
 
 output "plz_hub_vnet_name" {
   description = "The name of the hub VNet."
-  value = module.plz-con-network-hub.plz_hub_vnet_name
+  value = try(module.plz-con-network-hub["hub"].plz_hub_vnet_name, null)
 }
