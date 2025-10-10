@@ -5,7 +5,7 @@
 locals {
   name_part      = "${var.naming["prefix"]}-${var.naming["platform"]}" # Combine name parts in to single var.
   computed_tags  = {
-    Modified = "${timestamp()}" # Get timestamp to use for resource tags.
+    Modified = replace(replace(replace(replace(timestamp(), "-", ""), "T", ""), ":", ""), "Z", "") # Get timestamp to use for resource tags.
   }
   merged_tags = merge(local.computed_tags, var.tags) # Merge the tag map into existing tags variable.
 }
