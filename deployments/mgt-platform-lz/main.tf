@@ -2,7 +2,7 @@
 # Platform: Deploying Azure Platform Landing Zone.
 #=================================================#
 
-# Deploy resoures via modules. 
+# Deploy resoures via modules.
 
 module "az-con-network-hub" {
   source = "../../modules/az-con-network-hub"
