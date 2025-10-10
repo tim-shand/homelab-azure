@@ -42,3 +42,10 @@ resource "azurerm_role_assignment" "rbac_mg_sp" {
   role_definition_name = "Contributor"
   principal_id         = azuread_service_principal.entra_iac_sp.object_id # Service Principal ID.
 }
+
+# Assign 'User Access Administrator' role for SP at top-level tenant root management group.
+resource "azurerm_role_assignment" "rbac_mg_sp" {
+  scope                = data.azurerm_management_group.mg_tenant_root.id # Tenant Root MG ID.
+  role_definition_name = "User Access Administrator"
+  principal_id         = azuread_service_principal.entra_iac_sp.object_id # Service Principal ID.
+}
