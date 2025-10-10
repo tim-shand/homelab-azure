@@ -5,11 +5,6 @@ variable "location" {
   type    = string
 }
 
-variable "workload_name" {
-  description = "Name of workload."
-  type = string
-}
-
 variable "naming" {
   description = "Map of naming conventions used for resources."
   type = map(string)

@@ -1,9 +1,14 @@
 #======================================#
 # Network: Hub - Resource Group
 #======================================#
+
+locals {
+  name_part = "${var.naming["prefix"]}-${var.naming["platform"]}"
+}
+
 # Create Resource Group.
 resource "azurerm_resource_group" "plz_con_hub_rg" {
-  name     = "${var.naming["prefix"]}-${var.naming["type"]}-con-hub-rg"
+  name     = "${local.name_part}-con-hub-rg"
   location = var.location
   tags     = var.tags
 }
@@ -14,7 +19,7 @@ resource "azurerm_resource_group" "plz_con_hub_rg" {
 
 # Create: Virtual Network (Hub)
 resource "azurerm_virtual_network" "plz_con_hub_vnet" {
-  name                = "${var.naming["prefix"]}-${var.naming["type"]}-con-hub-vnet"
+  name                = "${local.name_part}-con-hub-vnet"
   location            = var.location
   resource_group_name = azurerm_resource_group.plz_con_hub_rg.name
   address_space       = [var.vnet_space]
@@ -23,7 +28,7 @@ resource "azurerm_virtual_network" "plz_con_hub_vnet" {
 
 # Create: Virtual Network Subnet (Primary)
 resource "azurerm_subnet" "plz_con_hub_sn1" {
-  name                 = "${var.naming["prefix"]}-${var.naming["type"]}-con-hub-sn1"
+  name                 = "${local.name_part}-con-hub-sn1"
   resource_group_name  = azurerm_virtual_network.plz_con_hub_vnet.resource_group_name
   virtual_network_name = azurerm_virtual_network.plz_con_hub_vnet.name
   address_prefixes     = [var.subnet_space]
@@ -36,7 +41,7 @@ resource "azurerm_subnet" "plz_con_hub_sn1" {
 
 # NSG rules to be defined in separate files.
 resource "azurerm_network_security_group" "plz_con_hub_sn1_nsg" {
-  name                = "${var.naming["prefix"]}-${var.naming["type"]}-con-hub-sn1-nsg"
+  name                = "${local.name_part}-con-hub-sn1-nsg"
   location            = azurerm_virtual_network.plz_con_hub_vnet.location
   resource_group_name = azurerm_virtual_network.plz_con_hub_vnet.resource_group_name
   tags                = var.tags
