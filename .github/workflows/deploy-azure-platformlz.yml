@@ -6,12 +6,14 @@ on:
     branches:
       - main # Trigger the workflow on commits to the main branch.
     paths:
-      - 'deployments/mgt-platform-lz/**' # Only trigger for changes in the deployment directory.
+      - 'deployments/mgt-platform-lz/**' # Trigger for changes in the deployment directory.
+      - 'modules/**' # Trigger for changes in the modules directory.
   pull_request:
     branches:
       - main # Trigger the workflow on pull requests to the main branch.
     paths:
-      - 'deployments/mgt-platform-lz/**' # Only trigger for changes in the deployment directory.
+      - 'deployments/mgt-platform-lz/**' # Trigger for changes in the deployment directory.
+      - 'modules/**' # Trigger for changes in the modules directory.
   workflow_dispatch: # Manual run.
     inputs:
       action:
