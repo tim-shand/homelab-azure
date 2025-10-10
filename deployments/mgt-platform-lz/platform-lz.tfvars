@@ -4,10 +4,8 @@ location = "newzealandnorth" # Desired location for resources to be deployed in 
 # Naming Settings (used for resource names).
 naming = {
     prefix = "tjs" # Short name of organization ("abc").
-    type = "mgt" # Short code for purpose/type of deployment ("mgt", "app").
+    type = "plz" # Short code for purpose/type of deployment ("mgt", "app").
     project = "platform" # Project name for related resources ("platform, application").
-    service = "gov" # Service name used in the project ("iac", "gov", "sec").
-    environment = "plz" # Environment for resources/project ("dev", "tst", "prd", "plz").
 }
 
 # Tags (assigned to all bootstrap resources).
